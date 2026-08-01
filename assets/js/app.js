@@ -58,7 +58,6 @@
     readHistory() {
       const current = this.read(STORAGE_KEYS.history, null);
       if (Array.isArray(current)) return current;
-      // محاولة قراءة الإصدار القديم
       const old = this.read('yousefAutoPartsInvoiceHistoryV1', []);
       return Array.isArray(old) ? old : [];
     }
@@ -69,7 +68,6 @@
   // ============================================================
 
   const Utils = {
-    // تحويل الأرقام العربية إلى لاتينية
     toLatinDigits(value) {
       const arabic = '٠١٢٣٤٥٦٧٨٩';
       const persian = '۰۱۲۳۴۵۶۷۸۹';
@@ -78,7 +76,6 @@
         .replace(/[۰-۹]/g, d => String(persian.indexOf(d)));
     },
 
-    // تطبيع رقم واتساب
     normalizeWhatsapp(value) {
       let digits = this.toLatinDigits(value).replace(/\D/g, '');
       if (digits.startsWith('00')) digits = digits.slice(2);
@@ -87,13 +84,11 @@
       return digits.slice(0, 15);
     },
 
-    // إنشاء معرف فريد
     makeId(prefix) {
       if (window.crypto?.randomUUID) return `${prefix}-${window.crypto.randomUUID()}`;
       return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     },
 
-    // توليد رقم فاتورة
     generateInvoiceNumber() {
       const now = new Date();
       const y = now.getFullYear();
@@ -103,20 +98,17 @@
       return `INV-${y}${m}${d}-${rand}`;
     },
 
-    // تاريخ اليوم بصيغة ISO
     todayIso() {
       const now = new Date();
       const offset = now.getTimezoneOffset();
       return new Date(now.getTime() - offset * 60000).toISOString().slice(0, 10);
     },
 
-    // الوقت الحالي بصيغة HH:MM
     currentTimeIso() {
       const now = new Date();
       return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     },
 
-    // تنسيق التاريخ
     formatDate(value) {
       if (!value) return '—';
       const date = new Date(`${value}T12:00:00`);
@@ -139,48 +131,48 @@
       }).format(date);
     },
 
-    // تنسيق الأرقام
     formatMoney(value) {
       return `${this.formatNumber(value)} ريال`;
     },
+
     formatNumber(value) {
       return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
         .format(Number(value) || 0);
     },
+
     formatQuantity(value) {
       return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
         .format(Number(value) || 0);
     },
+
     fixedNumber(value) {
       return (Number(value) || 0).toFixed(2);
     },
 
-    // تحويلات الأعداد
     nonNegative(value, fallback) {
       const num = Number(value);
       return Number.isFinite(num) && num >= 0 ? num : fallback;
     },
+
     positive(value, fallback) {
       const num = Number(value);
       return Number.isFinite(num) && num > 0 ? num : fallback;
     },
+
     clamp(value, min, max) {
       const num = Number(value);
       if (!Number.isFinite(num)) return min;
       return Math.min(max, Math.max(min, num));
     },
 
-    // البحث المطبع
     normalizeSearch(value) {
       return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
     },
 
-    // اسم ملف آمن
     safeFileName(value) {
       return String(value || 'invoice').replace(/[\\/:*?"<>|]+/g, '-').trim() || 'invoice';
     },
 
-    // هروب HTML
     escapeHtml(value) {
       return String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -190,7 +182,6 @@
         .replaceAll("'", '&#039;');
     },
 
-    // تنزيل ملف
     downloadBlob(blob, fileName) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -202,7 +193,6 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     },
 
-    // دمج الطلبات المرتبطة بالمخزون
     aggregateLinkedItems(items) {
       const map = new Map();
       items.forEach(item => {
@@ -222,9 +212,7 @@
     els: {},
 
     init() {
-      // جمع كل العناصر المهمة
       this.els = {
-        // حقول الفاتورة
         sellerVatNumber: document.getElementById('sellerVatNumber'),
         logoUpload: document.getElementById('logoUpload'),
         logoStatus: document.getElementById('logoStatus'),
@@ -253,7 +241,6 @@
         newInvoiceBtn: document.getElementById('newInvoiceBtn'),
         actionStatus: document.getElementById('actionStatus'),
 
-        // لوحة المخزون
         productsBtn: document.getElementById('productsBtn'),
         openProductsBtn: document.getElementById('openProductsBtn'),
         openMovementsBtn: document.getElementById('openMovementsBtn'),
@@ -266,7 +253,6 @@
         statSaleValue: document.getElementById('statSaleValue'),
         lowStockPreview: document.getElementById('lowStockPreview'),
 
-        // مودال المنتجات
         productsModal: document.getElementById('productsModal'),
         closeProductsBtn: document.getElementById('closeProductsBtn'),
         productForm: document.getElementById('productForm'),
@@ -288,29 +274,24 @@
         productsBody: document.getElementById('productsBody'),
         productsEmpty: document.getElementById('productsEmpty'),
 
-        // مودال منتقي المنتجات
         productPickerModal: document.getElementById('productPickerModal'),
         closePickerBtn: document.getElementById('closePickerBtn'),
         pickerSearch: document.getElementById('pickerSearch'),
         pickerList: document.getElementById('pickerList'),
 
-        // مودال الحركات
         movementsModal: document.getElementById('movementsModal'),
         closeMovementsBtn: document.getElementById('closeMovementsBtn'),
         movementsList: document.getElementById('movementsList'),
 
-        // مودال التاريخ
         historyBtn: document.getElementById('historyBtn'),
         historyModal: document.getElementById('historyModal'),
         closeHistoryBtn: document.getElementById('closeHistoryBtn'),
         historyList: document.getElementById('historyList'),
 
-        // حاوية الطباعة
         invoicePrintContainer: document.getElementById('invoicePrintContainer')
       };
     },
 
-    // عرض رسالة حالة
     showStatus(message, isError = false) {
       const el = this.els.actionStatus;
       if (!el) return;
@@ -318,7 +299,6 @@
       el.style.color = isError ? '#b42318' : '#456173';
     },
 
-    // فتح وإغلاق المودالات
     openModal(modal) {
       if (!modal) return;
       modal.classList.add('active');
@@ -335,7 +315,6 @@
       }
     },
 
-    // تفريغ نموذج المنتج
     resetProductForm() {
       const f = this.els;
       f.productForm.reset();
@@ -436,14 +415,12 @@
         .slice(0, 6);
     },
 
-    // حالة المخزون
     stockStatus(product) {
       if (product.stock <= 0) return { label: 'منتهي', className: 'out' };
       if (product.stock <= product.minStock) return { label: 'منخفض', className: 'low' };
       return { label: 'متوفر', className: 'available' };
     },
 
-    // البحث في المنتجات
     search(query) {
       const q = Utils.normalizeSearch(query);
       if (!q) return this.products;
@@ -469,7 +446,6 @@
       invoiceCommitted: false
     },
 
-    // إضافة بند
     addItem(item = {}, makeEditable = true) {
       if (makeEditable) this.ensureEditable();
       const model = {
@@ -485,7 +461,6 @@
       this.recalculate();
     },
 
-    // التأكد من أن الفاتورة قابلة للتعديل (إنشاء رقم جديد إذا كانت معتمدة)
     ensureEditable() {
       if (!this.state.invoiceCommitted) return;
       this.state.invoiceCommitted = false;
@@ -493,7 +468,6 @@
       UI.showStatus('تم إنشاء رقم فاتورة جديد لأن الفاتورة السابقة كانت معتمدة ومخصومة من المخزون.');
     },
 
-    // حساب بند واحد
     calculateItem(item) {
       const rate = Utils.clamp(UI.els.taxRate.value, 0, 100) / 100;
       const gross = Utils.nonNegative(item.unitPrice, 0) * Utils.positive(item.quantity, 1);
@@ -510,7 +484,6 @@
       return { subtotal, tax, total };
     },
 
-    // إجماليات الفاتورة
     getTotals() {
       return this.state.items.reduce((acc, item) => {
         const v = this.calculateItem(item);
@@ -521,7 +494,6 @@
       }, { subtotal: 0, tax: 0, total: 0 });
     },
 
-    // تحديث العرض
     recalculate() {
       this.updateRowAmounts();
       const totals = this.getTotals();
@@ -543,7 +515,6 @@
       });
     },
 
-    // عرض البنود في الجدول
     renderItems() {
       const tbody = UI.els.itemsBody;
       const fragment = document.createDocumentFragment();
@@ -578,7 +549,6 @@
       this.updateRowAmounts();
     },
 
-    // الحصول على بيانات الفاتورة كاملة
     getInvoiceData() {
       const totals = this.getTotals();
       return {
@@ -606,7 +576,6 @@
       };
     },
 
-    // التحقق من صحة الفاتورة
     validate() {
       const f = UI.els;
       if (!f.invoiceNumber.value.trim()) {
@@ -628,7 +597,6 @@
         f.sellerVatNumber.focus();
         return false;
       }
-      // التحقق من الكميات المتوفرة
       if (!this.state.invoiceCommitted) {
         const requested = Utils.aggregateLinkedItems(this.state.items);
         for (const [productId, qty] of requested.entries()) {
@@ -646,7 +614,6 @@
       return true;
     },
 
-    // تنفيذ خصم المخزون وحفظ الفاتورة
     commitInventory(data) {
       const history = Storage.readHistory();
       const existing = history.find(e => e.number === data.number);
@@ -682,7 +649,6 @@
       return { changed: linkedCount > 0, linkedCount, already: false };
     },
 
-    // حفظ الفاتورة في السجل
     saveHistory(data) {
       const history = Storage.readHistory();
       const idx = history.findIndex(e => e.number === data.number);
@@ -691,13 +657,12 @@
         ...data,
         inventoryCommitted: Boolean(data.inventoryCommitted),
         inventoryCommittedAt: data.inventoryCommittedAt || '',
-        logoDataUrl: '' // لا نحفظ الصورة في التاريخ لتوفير المساحة
+        logoDataUrl: ''
       };
       history.unshift(record);
       Storage.write(STORAGE_KEYS.history, history.slice(0, MAX_HISTORY));
     },
 
-    // تحميل فاتورة من السجل
     loadHistory(index) {
       const entry = Storage.readHistory()[index];
       if (!entry) return;
@@ -737,7 +702,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
-    // حفظ الإعدادات (الضريبة، الرقم الضريبي، الشعار، إلخ)
     saveSettings() {
       const settings = {
         vatNumber: UI.els.sellerVatNumber.value.trim(),
@@ -764,7 +728,6 @@
       this.updateLogoPreview();
     },
 
-    // معاينة الشعار
     updateLogoPreview() {
       const has = Boolean(this.state.logoDataUrl);
       UI.els.logoPreviewWrap.hidden = !has;
@@ -777,7 +740,6 @@
       }
     },
 
-    // معالجة رفع الشعار
     async handleLogoUpload(file) {
       if (!file) return;
       if (!file.type.startsWith('image/')) {
@@ -853,7 +815,7 @@
       const payload = this.createPayload({
         sellerName: BUSINESS.name,
         vatNumber: vat,
-        timestamp: Invoice.invoiceTimestamp(data.date, data.time),
+        timestamp: this.invoiceTimestamp(data.date, data.time),
         total: Utils.fixedNumber(data.totals.total),
         tax: Utils.fixedNumber(data.totals.tax)
       });
@@ -903,6 +865,13 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+    },
+
+    invoiceTimestamp(dateValue, timeValue) {
+      const date = dateValue || Utils.todayIso();
+      const time = timeValue || Utils.currentTimeIso();
+      const parsed = new Date(`${date}T${time}:00`);
+      return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
     }
   };
 
@@ -987,7 +956,6 @@
           </div>
         </div>`;
 
-      // رسم QR داخل الطباعة
       if (Invoice.state.qrText) {
         const printCanvas = document.getElementById('printQrCanvas');
         await QR.draw(printCanvas, Invoice.state.qrText, 130);
@@ -1100,9 +1068,10 @@
     setupEventListeners() {
       const f = UI.els;
 
-      // بنود الفاتورة
+      // بنود الفاتورة - استخدم دوال سهمية للحفاظ على السياق
       f.addItemBtn.addEventListener('click', () => Invoice.addItem());
-      f.addFromInventoryBtn.addEventListener('click', this.openProductPicker);
+      f.addFromInventoryBtn.addEventListener('click', () => this.openProductPicker());
+
       f.itemsBody.addEventListener('input', this.handleItemInput.bind(this));
       f.itemsBody.addEventListener('click', this.handleItemClick.bind(this));
 
@@ -1254,7 +1223,6 @@
         return;
       }
       Invoice.ensureEditable();
-      // البحث عن بند موجود
       const existing = Invoice.state.items.find(it => it.productId === product.id);
       if (existing) {
         if (existing.quantity + 1 > product.stock) {
@@ -1269,7 +1237,6 @@
         UI.showStatus(`تمت زيادة كمية ${product.name} في الفاتورة.`);
         return;
       }
-      // استبدال البند الفارغ إذا وجد
       const emptyManual = Invoice.state.items.find(it =>
         !it.productId && !it.partNumber.trim() && !it.description.trim() && Number(it.unitPrice) === 0
       );
@@ -1653,7 +1620,6 @@
       list.innerHTML = '';
       list.appendChild(fragment);
 
-      // ربط الأحداث
       list.querySelectorAll('[data-load-history]').forEach(btn => {
         btn.addEventListener('click', () => {
           Invoice.loadHistory(Number(btn.dataset.loadHistory));
@@ -1688,7 +1654,6 @@
 
     async sharePdf() {
       if (!Invoice.validate()) return;
-      // فتح تبويب احتياطي مبكرًا على اللابتوب
       const likelyDesktop = !window.matchMedia('(pointer: coarse)').matches;
       const whatsappTab = likelyDesktop ? window.open('about:blank', '_blank') : null;
 
