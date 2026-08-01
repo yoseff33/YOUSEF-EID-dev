@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#123a63">
+  <meta name="description" content="نظام إدارة مؤسسة يوسف عيد المطيري لقطع غيار السيارات">
+  <title>نظام قطع الغيار | مؤسسة يوسف عيد المطيري</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="setupScreen" class="center-screen hidden">
+    <section class="auth-card wide-card">
+      <div class="brand-icon">🚘</div>
+      <h1>إعداد الاتصال بقاعدة البيانات</h1>
+      <p>الموقع مستضاف على GitHub Pages، وSupabase مسؤول عن تسجيل الدخول والبيانات والمزامنة بين الأجهزة.</p>
+      <div class="alert alert-warning">
+        افتح ملف <code>assets/js/config.js</code> وأدخل رابط مشروع Supabase ومفتاح <code>anon</code>، ثم ارفع الملفات من جديد.
+      </div>
+      <ol class="setup-list">
+        <li>نفّذ ملف <code>supabase/schema.sql</code> داخل SQL Editor في Supabase.</li>
+        <li>أنشئ أول مستخدم من Authentication، ثم اجعله مديرًا حسب تعليمات README.</li>
+        <li>حدّث بيانات <code>config.js</code>.</li>
+      </ol>
+    </section>
+  </div>
+
+  <div id="loginScreen" class="center-screen hidden">
+    <section class="auth-card">
+      <div class="brand-icon">🚘</div>
+      <h1>مؤسسة يوسف عيد المطيري</h1>
+      <p>نظام المبيعات والمخزون</p>
+      <form id="loginForm" class="stack-form">
+        <label class="field">
+          <span>البريد الإلكتروني</span>
+          <input id="loginEmail" type="email" autocomplete="username" required>
+        </label>
+        <label class="field">
+          <span>كلمة المرور</span>
+          <input id="loginPassword" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="btn btn-primary" type="submit">تسجيل الدخول</button>
+      </form>
+      <p id="loginStatus" class="status-text" aria-live="polite"></p>
+    </section>
+  </div>
+
+  <div id="app" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon small">🚘</div>
+        <div>
+          <strong>مؤسسة يوسف عيد المطيري</strong>
+          <span>لقطع غيار السيارات</span>
+        </div>
+      </div>
+
+      <nav class="nav-list" id="mainNav">
+        <button data-page="dashboard" class="nav-item active"><span>▦</span> لوحة التحكم</button>
+        <button data-page="sales" class="nav-item" data-roles="admin,sales"><span>🧾</span> المبيعات</button>
+        <button data-page="inventory" class="nav-item" data-roles="admin,sales,inventory"><span>📦</span> المخزون</button>
+        <button data-page="purchases" class="nav-item" data-roles="admin,inventory"><span>🛒</span> المشتريات</button>
+        <button data-page="suppliers" class="nav-item" data-roles="admin,inventory"><span>🏭</span> الموردون</button>
+        <button data-page="returns" class="nav-item" data-roles="admin,sales"><span>↩</span> المرتجعات</button>
+        <button data-page="stock-count" class="nav-item" data-roles="admin,inventory"><span>✓</span> جرد المخزون</button>
+        <button data-page="reports" class="nav-item" data-roles="admin"><span>📊</span> التقارير</button>
+        <button data-page="users" class="nav-item" data-roles="admin"><span>👥</span> المستخدمون</button>
+        <button data-page="audit" class="nav-item" data-roles="admin"><span>🛡️</span> سجل العمليات</button>
+        <button data-page="settings" class="nav-item" data-roles="admin"><span>⚙️</span> الإعدادات</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sync-indicator" id="syncIndicator">
+          <span class="sync-dot"></span>
+          <div><strong id="syncLabel">متصل</strong><small id="syncDetails">تمت المزامنة</small></div>
+        </div>
+        <button id="logoutBtn" class="btn btn-ghost full-width">تسجيل الخروج</button>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <button id="menuBtn" class="icon-btn mobile-only" aria-label="فتح القائمة">☰</button>
+        <div>
+          <h1 id="pageTitle">لوحة التحكم</h1>
+          <p id="pageSubtitle">ملخص نشاط المؤسسة</p>
+        </div>
+        <div class="topbar-user">
+          <div>
+            <strong id="currentUserName">—</strong>
+            <span id="currentUserRole">—</span>
+          </div>
+          <div class="avatar" id="currentUserAvatar">ي</div>
+        </div>
+      </header>
+
+      <main id="pageContent" class="page-content"></main>
+    </div>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot" class="toast-root"></div>
+  <div id="printRoot" class="print-root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <script src="assets/vendor/qrcode.min.js"></script>
+  <script src="assets/vendor/html2canvas.min.js"></script>
+  <script src="assets/vendor/jspdf.umd.min.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/local-db.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
