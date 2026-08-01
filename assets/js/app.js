@@ -1778,3 +1778,87 @@
       };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8' });
       Utils.downloadBlob(blob, `نسخة-احتياطية-قطع-الغيار-${Utils.todayIso()}.json`);
+      UI.showStatus('تم تنزيل نسخة احتياطية تشمل المنتجات والمخزون والفواتير والإعدادات.');
+    },
+
+    async importBackup(e) {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const backup = JSON.parse(text);
+        if (!backup || backup.schema !== 'yousef-auto-parts-backup-v1' || !Array.isArray(backup.products)) {
+          throw new Error('ملف غير صالح');
+        }
+        if (!window.confirm('استرجاع النسخة سيستبدل المنتجات والمخزون والفواتير الحالية. متأكد؟')) return;
+        Storage.write(STORAGE_KEYS.settings, backup.settings || {});
+        Storage.write(STORAGE_KEYS.products, backup.products || []);
+        Storage.write(STORAGE_KEYS.movements, backup.movements || []);
+        Storage.write(STORAGE_KEYS.history, backup.history || []);
+        window.alert('تم استرجاع النسخة بنجاح. سيتم تحديث الصفحة الآن.');
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+        UI.showStatus('تعذر استرجاع الملف. تأكد أنه نسخة احتياطية صادرة من نفس الموقع.', true);
+      }
+    },
+
+    // --- تصدير CSV ---
+    exportProductsCsv() {
+      if (!Inventory.products.length) {
+        window.alert('ما فيه منتجات لتصديرها.');
+        return;
+      }
+      const rows = [
+        ['اسم المنتج', 'رقم القطعة', 'الباركود', 'الشركة', 'السيارات المتوافقة', 'سعر الشراء', 'سعر البيع', 'الكمية', 'حد التنبيه', 'الرف', 'ملاحظات'],
+        ...Inventory.products.map(p => [
+          p.name, p.partNumber, p.barcode, p.brand, p.vehicles,
+          p.costPrice, p.salePrice, p.stock, p.minStock, p.shelf, p.notes
+        ])
+      ];
+      const csv = '\uFEFF' + rows.map(row => row.map(cell => `"${String(cell ?? '').replaceAll('"', '""')}"`).join(',')).join('\r\n');
+      Utils.downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `منتجات-المخزون-${Utils.todayIso()}.csv`);
+    },
+
+    // --- تشغيل إجراء مع تعطيل الأزرار مؤقتًا ---
+    async runAction(button, action) {
+      const btns = [UI.els.savePdfBtn, UI.els.sharePdfBtn, UI.els.printBtn, UI.els.newInvoiceBtn];
+      btns.forEach(b => { b.disabled = true; });
+      const originalText = button.textContent;
+      button.textContent = 'جاري التجهيز...';
+      UI.showStatus('');
+      try {
+        await action();
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.error(error);
+          UI.showStatus('صار خطأ أثناء تجهيز الفاتورة. جرّب مرة ثانية.', true);
+        }
+      } finally {
+        button.textContent = originalText;
+        btns.forEach(b => { b.disabled = false; });
+      }
+    },
+
+    // --- تطبيق تنسيق الأرقام على الحقول ---
+    applyLatinInputs() {
+      const selector = 'input[type="number"], input[type="date"], input[type="time"], input[inputmode="numeric"], input[inputmode="decimal"], input[inputmode="tel"], .latin-digits';
+      document.querySelectorAll(selector).forEach(el => {
+        el.lang = el.type === 'date' || el.type === 'time' ? 'en-GB' : 'en-US';
+        el.dir = 'ltr';
+        el.classList.add('latin-digits');
+        el.addEventListener('input', () => {
+          const converted = Utils.toLatinDigits(el.value);
+          if (converted !== el.value) el.value = converted;
+        });
+      });
+    }
+  };
+
+  // ============================================================
+  //  بدء التطبيق عند تحميل الصفحة
+  // ============================================================
+  document.addEventListener('DOMContentLoaded', () => App.init());
+
+})();
