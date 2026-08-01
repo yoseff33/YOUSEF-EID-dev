@@ -1,6 +1,8 @@
 window.APP_CONFIG = Object.freeze({
-  supabaseUrl: "sb_publishable_L8GNpYh4zsoQ_KG44Cc-WQ_M-X6Wnuj",
-  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppY3Jtb2FhYWJ4dmtwenV1aXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1NjI1MDgsImV4cCI6MjEwMTEzODUwOH0.od9WR8hz4o57RZvAorM7BGoeh7i7SwURdetzJ1cesKU",
+  supabaseUrl: "https://zicrmoaaabxvkpzuuixc.supabase.co",
+
+  supabaseAnonKey: "sb_publishable_L8GNpYh4zsoQ_KG44Cc-WQ_M-X6Wnuj",
+
   business: {
     name: "مؤسسة يوسف عيد المطيري لقطع غيار السيارات",
     commercialRegistration: "7054534024",
@@ -8,6 +10,7 @@ window.APP_CONFIG = Object.freeze({
     vatNumber: "",
     defaultVatRate: 15
   },
+
   currency: "SAR",
   locale: "ar-SA",
   lowStockDaysWindow: 30,
