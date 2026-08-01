@@ -4,114 +4,359 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#123a63">
-  <meta name="description" content="نظام إدارة مؤسسة يوسف عيد المطيري لقطع غيار السيارات">
-  <title>نظام قطع الغيار | مؤسسة يوسف عيد المطيري</title>
-  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="description" content="نظام فواتير ومخزون مؤسسة يوسف عيد المطيري لقطع غيار السيارات">
+  <title>الفواتير والمخزون | مؤسسة يوسف عيد المطيري</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <!-- أنماط الموقع -->
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <div id="setupScreen" class="center-screen hidden">
-    <section class="auth-card wide-card">
-      <div class="brand-icon">🚘</div>
-      <h1>إعداد الاتصال بقاعدة البيانات</h1>
-      <p>الموقع مستضاف على GitHub Pages، وSupabase مسؤول عن تسجيل الدخول والبيانات والمزامنة بين الأجهزة.</p>
-      <div class="alert alert-warning">
-        افتح ملف <code>assets/js/config.js</code> وأدخل رابط مشروع Supabase ومفتاح <code>anon</code>، ثم ارفع الملفات من جديد.
+  <!-- ============================================================
+       الرأس
+       ============================================================ -->
+  <header class="site-header no-print">
+    <div class="header-inner">
+      <div class="brand-mark" aria-hidden="true">🚘</div>
+      <div class="brand-copy">
+        <h1>مؤسسة يوسف عيد المطيري لقطع غيار السيارات</h1>
+        <p>نظام الفواتير والمخزون</p>
       </div>
-      <ol class="setup-list">
-        <li>نفّذ ملف <code>supabase/schema.sql</code> داخل SQL Editor في Supabase.</li>
-        <li>أنشئ أول مستخدم من Authentication، ثم اجعله مديرًا حسب تعليمات README.</li>
-        <li>حدّث بيانات <code>config.js</code>.</li>
-      </ol>
-    </section>
-  </div>
-
-  <div id="loginScreen" class="center-screen hidden">
-    <section class="auth-card">
-      <div class="brand-icon">🚘</div>
-      <h1>مؤسسة يوسف عيد المطيري</h1>
-      <p>نظام المبيعات والمخزون</p>
-      <form id="loginForm" class="stack-form">
-        <label class="field">
-          <span>البريد الإلكتروني</span>
-          <input id="loginEmail" type="email" autocomplete="username" required>
-        </label>
-        <label class="field">
-          <span>كلمة المرور</span>
-          <input id="loginPassword" type="password" autocomplete="current-password" required>
-        </label>
-        <button class="btn btn-primary" type="submit">تسجيل الدخول</button>
-      </form>
-      <p id="loginStatus" class="status-text" aria-live="polite"></p>
-    </section>
-  </div>
-
-  <div id="app" class="app-shell hidden">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-icon small">🚘</div>
-        <div>
-          <strong>مؤسسة يوسف عيد المطيري</strong>
-          <span>لقطع غيار السيارات</span>
-        </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" id="productsBtn" type="button">المخزون</button>
+        <button class="btn btn-ghost" id="historyBtn" type="button">الفواتير</button>
       </div>
-
-      <nav class="nav-list" id="mainNav">
-        <button data-page="dashboard" class="nav-item active"><span>▦</span> لوحة التحكم</button>
-        <button data-page="sales" class="nav-item" data-roles="admin,sales"><span>🧾</span> المبيعات</button>
-        <button data-page="inventory" class="nav-item" data-roles="admin,sales,inventory"><span>📦</span> المخزون</button>
-        <button data-page="purchases" class="nav-item" data-roles="admin,inventory"><span>🛒</span> المشتريات</button>
-        <button data-page="suppliers" class="nav-item" data-roles="admin,inventory"><span>🏭</span> الموردون</button>
-        <button data-page="returns" class="nav-item" data-roles="admin,sales"><span>↩</span> المرتجعات</button>
-        <button data-page="stock-count" class="nav-item" data-roles="admin,inventory"><span>✓</span> جرد المخزون</button>
-        <button data-page="reports" class="nav-item" data-roles="admin"><span>📊</span> التقارير</button>
-        <button data-page="users" class="nav-item" data-roles="admin"><span>👥</span> المستخدمون</button>
-        <button data-page="audit" class="nav-item" data-roles="admin"><span>🛡️</span> سجل العمليات</button>
-        <button data-page="settings" class="nav-item" data-roles="admin"><span>⚙️</span> الإعدادات</button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="sync-indicator" id="syncIndicator">
-          <span class="sync-dot"></span>
-          <div><strong id="syncLabel">متصل</strong><small id="syncDetails">تمت المزامنة</small></div>
-        </div>
-        <button id="logoutBtn" class="btn btn-ghost full-width">تسجيل الخروج</button>
-      </div>
-    </aside>
-
-    <div class="app-main">
-      <header class="topbar">
-        <button id="menuBtn" class="icon-btn mobile-only" aria-label="فتح القائمة">☰</button>
-        <div>
-          <h1 id="pageTitle">لوحة التحكم</h1>
-          <p id="pageSubtitle">ملخص نشاط المؤسسة</p>
-        </div>
-        <div class="topbar-user">
-          <div>
-            <strong id="currentUserName">—</strong>
-            <span id="currentUserRole">—</span>
-          </div>
-          <div class="avatar" id="currentUserAvatar">ي</div>
-        </div>
-      </header>
-
-      <main id="pageContent" class="page-content"></main>
     </div>
+  </header>
+
+  <!-- ============================================================
+       المحتوى الرئيسي
+       ============================================================ -->
+  <main class="page-shell no-print">
+
+    <!-- إشعار عام -->
+    <section class="notice-card">
+      <strong>يعمل بدون سيرفر:</strong>
+      المنتجات والمخزون والفواتير محفوظة بشكل دائم داخل متصفح هذا الجهاز.
+      استخدم النسخة الاحتياطية بشكل دوري لحماية بياناتك.
+    </section>
+
+    <!-- لوحة تحكم المخزون -->
+    <section class="panel inventory-dashboard">
+      <div class="section-heading section-heading-actions">
+        <div class="heading-main">
+          <span class="step">✓</span>
+          <div>
+            <h2>ملخص المخزون</h2>
+            <p>يتحدث تلقائيًا عند إضافة المنتجات أو بيعها.</p>
+          </div>
+        </div>
+        <div class="dashboard-actions">
+          <button class="btn btn-primary" id="openProductsBtn" type="button">إدارة المنتجات</button>
+          <button class="btn btn-secondary" id="openMovementsBtn" type="button">حركات المخزون</button>
+          <button class="btn btn-light" id="exportBackupBtn" type="button">نسخة احتياطية</button>
+          <label class="btn btn-outline file-button">
+            استرجاع نسخة
+            <input id="importBackupInput" type="file" accept="application/json,.json" hidden>
+          </label>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card"><span>عدد المنتجات</span><strong id="statProducts">0</strong></article>
+        <article class="stat-card"><span>إجمالي القطع</span><strong id="statUnits">0</strong></article>
+        <article class="stat-card warning"><span>منخفض أو منتهي</span><strong id="statLowStock">0</strong></article>
+        <article class="stat-card"><span>قيمة المخزون شراء</span><strong id="statCostValue">0.00 ريال</strong></article>
+        <article class="stat-card"><span>قيمة المخزون بيع</span><strong id="statSaleValue">0.00 ريال</strong></article>
+      </div>
+
+      <div id="lowStockPreview" class="low-stock-preview"></div>
+    </section>
+
+    <!-- بيانات المنشأة -->
+    <section class="panel">
+      <div class="section-heading">
+        <span class="step">1</span>
+        <div>
+          <h2>بيانات المنشأة</h2>
+          <p>البيانات الأساسية مثبتة ولا تحتاج لإدخالها كل مرة.</p>
+        </div>
+      </div>
+
+      <div class="business-grid">
+        <div class="business-card">
+          <span>اسم المنشأة</span>
+          <strong>مؤسسة يوسف عيد المطيري لقطع غيار السيارات</strong>
+        </div>
+        <div class="business-card">
+          <span>السجل التجاري</span>
+          <strong>7054534024</strong>
+        </div>
+        <div class="business-card business-card-wide">
+          <span>الموقع</span>
+          <strong>C2MH+P5، الصناعية، حفر الباطن 39925</strong>
+        </div>
+      </div>
+
+      <div class="form-grid form-grid-2 top-gap">
+        <label class="field">
+          <span>الرقم الضريبي <small>(اختياري)</small></span>
+          <input id="sellerVatNumber" inputmode="numeric" maxlength="15" autocomplete="off" placeholder="أدخل الرقم الضريبي إن وجد">
+          <small class="hint">يُستخدم في رمز QR وبيانات الفاتورة.</small>
+        </label>
+        <label class="field">
+          <span>صورة أو شعار المحل <small>(اختياري)</small></span>
+          <input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp">
+          <small class="hint" id="logoStatus">تظهر الصورة في بيانات المحل والفاتورة. PNG أو JPG أو WebP، بحد أقصى 2 ميجابايت.</small>
+        </label>
+      </div>
+      <div class="logo-preview-wrap" id="logoPreviewWrap" hidden>
+        <img id="logoPreview" alt="معاينة شعار المنشأة">
+        <button class="text-button danger" id="removeLogoBtn" type="button">حذف الشعار</button>
+      </div>
+    </section>
+
+    <!-- معلومات الفاتورة -->
+    <section class="panel">
+      <div class="section-heading">
+        <span class="step">2</span>
+        <div>
+          <h2>معلومات الفاتورة</h2>
+          <p>أدخل رقم الفاتورة وتاريخها وإعدادات الضريبة.</p>
+        </div>
+      </div>
+
+      <div class="form-grid form-grid-4 invoice-info-grid">
+        <label class="field">
+          <span>عنوان الفاتورة</span>
+          <input id="invoiceTitle" value="فاتورة ضريبية مبسطة" maxlength="80">
+        </label>
+        <label class="field">
+          <span>رقم الفاتورة</span>
+          <input id="invoiceNumber" class="latin-digits" lang="en-US" dir="ltr" maxlength="40">
+        </label>
+        <label class="field">
+          <span>تاريخ الفاتورة</span>
+          <input id="invoiceDate" class="latin-digits" lang="en-GB" dir="ltr" type="date">
+        </label>
+        <label class="field">
+          <span>وقت الفاتورة</span>
+          <input id="invoiceTime" class="latin-digits" lang="en-GB" dir="ltr" type="time" step="60">
+        </label>
+      </div>
+
+      <div class="tax-row top-gap">
+        <label class="switch-field">
+          <input id="taxIncluded" type="checkbox" checked>
+          <span class="switch"></span>
+          <span>سعر الوحدة شامل الضريبة</span>
+        </label>
+        <label class="field compact-field">
+          <span>نسبة الضريبة</span>
+          <div class="input-suffix">
+            <input id="taxRate" type="number" min="0" max="100" step="0.01" value="15">
+            <b>%</b>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- بنود الفاتورة -->
+    <section class="panel">
+      <div class="section-heading section-heading-actions">
+        <div class="heading-main">
+          <span class="step">3</span>
+          <div>
+            <h2>بنود الفاتورة</h2>
+            <p>اختر من المخزون أو أضف بندًا يدويًا.</p>
+          </div>
+        </div>
+        <div class="inline-actions">
+          <button class="btn btn-primary" id="addFromInventoryBtn" type="button">+ إضافة من المخزون</button>
+          <button class="btn btn-secondary" id="addItemBtn" type="button">+ بند يدوي</button>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>رقم القطعة</th>
+              <th>الوصف</th>
+              <th>الكمية</th>
+              <th>سعر الوحدة</th>
+              <th>قبل الضريبة</th>
+              <th>الضريبة</th>
+              <th>الإجمالي</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="itemsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="inventory-commit-note">
+        القطع المرتبطة بالمخزون تُخصم مرة واحدة فقط عند أول حفظ PDF أو مشاركة أو طباعة للفاتورة.
+      </div>
+
+      <div class="summary-wrap">
+        <div class="summary-card">
+          <div><span>المجموع قبل الضريبة</span><strong id="subtotalAmount">0.00 ريال</strong></div>
+          <div><span>ضريبة القيمة المضافة</span><strong id="taxAmount">0.00 ريال</strong></div>
+          <div class="summary-total"><span>الإجمالي شامل الضريبة</span><strong id="totalAmount">0.00 ريال</strong></div>
+        </div>
+      </div>
+
+      <label class="field top-gap">
+        <span>ملاحظات أو شروط الفاتورة <small>(اختياري)</small></span>
+        <textarea id="invoiceTerms" rows="3" maxlength="600" placeholder="مثال: البضاعة المباعة لا تُرد إلا حسب سياسة المنشأة."></textarea>
+      </label>
+    </section>
+
+    <!-- لوحة الإجراءات النهائية -->
+    <section class="panel action-panel">
+      <div class="qr-preview">
+        <canvas id="qrCanvas" width="160" height="160" aria-label="رمز QR للفاتورة"></canvas>
+        <p id="qrHint">أدخل الرقم الضريبي لإظهار رمز QR.</p>
+      </div>
+      <div class="action-content">
+        <label class="field whatsapp-recipient-field">
+          <span>رقم واتساب المستلم <small>(اختياري)</small></span>
+          <input id="whatsappNumber" class="latin-digits" lang="en-US" dir="ltr" inputmode="tel" autocomplete="tel" maxlength="18" placeholder="مثال: 9665XXXXXXXX">
+          <small class="hint">اتركه فارغًا لاختيار جهة الاتصال من واتساب.</small>
+        </label>
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="savePdfBtn" type="button">حفظ PDF واعتماد البيع</button>
+          <button class="btn btn-whatsapp" id="sharePdfBtn" type="button">إرسال الفاتورة واتساب واعتماد البيع</button>
+          <button class="btn btn-light" id="printBtn" type="button">طباعة واعتماد البيع</button>
+          <button class="btn btn-outline" id="newInvoiceBtn" type="button">فاتورة جديدة</button>
+        </div>
+      </div>
+      <p class="action-note" id="actionStatus" aria-live="polite"></p>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       التذييل
+       ============================================================ -->
+  <footer class="site-footer no-print">
+    <strong>مؤسسة يوسف عيد المطيري لقطع غيار السيارات</strong>
+    <span>السجل التجاري: 7054534024</span>
+  </footer>
+
+  <!-- ============================================================
+       المودالات
+       ============================================================ -->
+
+  <!-- مودال إدارة المنتجات -->
+  <div class="modal no-print" id="productsModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-products></div>
+    <section class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="productsTitle">
+      <header class="modal-header">
+        <div>
+          <h2 id="productsTitle">إدارة المنتجات والمخزون</h2>
+          <p>إضافة وتعديل وحذف وبحث وتصدير المنتجات.</p>
+        </div>
+        <button class="icon-button" id="closeProductsBtn" type="button" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body">
+        <form id="productForm" class="product-form">
+          <input id="productId" type="hidden">
+          <div class="form-grid form-grid-4">
+            <label class="field"><span>اسم المنتج *</span><input id="productName" maxlength="120" required placeholder="مثال: فلتر زيت"></label>
+            <label class="field"><span>رقم القطعة</span><input id="productPartNumber" maxlength="80" placeholder="Part Number"></label>
+            <label class="field"><span>الباركود</span><input id="productBarcode" maxlength="80" inputmode="numeric" placeholder="امسح أو اكتب الباركود"></label>
+            <label class="field"><span>الشركة المصنعة</span><input id="productBrand" maxlength="80" placeholder="مثال: Toyota"></label>
+            <label class="field"><span>سعر الشراء</span><input id="productCostPrice" type="number" min="0" step="0.01" value="0"></label>
+            <label class="field"><span>سعر البيع *</span><input id="productSalePrice" type="number" min="0" step="0.01" value="0" required></label>
+            <label class="field"><span>الكمية الحالية *</span><input id="productStock" type="number" min="0" step="0.01" value="0" required></label>
+            <label class="field"><span>حد التنبيه</span><input id="productMinStock" type="number" min="0" step="0.01" value="2"></label>
+            <label class="field"><span>السيارات المتوافقة</span><input id="productVehicles" maxlength="180" placeholder="كامري 2012-2017"></label>
+            <label class="field"><span>موقع الرف</span><input id="productShelf" maxlength="60" placeholder="A-12"></label>
+            <label class="field field-span-2"><span>ملاحظات</span><input id="productNotes" maxlength="240" placeholder="أي تفاصيل إضافية"></label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="saveProductBtn" type="submit">حفظ المنتج</button>
+            <button class="btn btn-light" id="resetProductBtn" type="button">تفريغ الحقول</button>
+          </div>
+        </form>
+
+        <div class="product-toolbar">
+          <label class="field search-field"><span>بحث سريع</span><input id="productSearch" placeholder="الاسم، رقم القطعة، الباركود، الشركة أو السيارة"></label>
+          <button class="btn btn-secondary" id="exportProductsCsvBtn" type="button">تصدير Excel CSV</button>
+        </div>
+
+        <div class="table-scroll product-table-scroll">
+          <table class="items-table product-table">
+            <thead>
+              <tr>
+                <th>المنتج</th><th>رقم القطعة</th><th>الباركود</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>الحالة</th><th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="productsBody"></tbody>
+          </table>
+        </div>
+        <div id="productsEmpty" class="history-empty" hidden>ما أضفت منتجات حتى الآن.</div>
+      </div>
+    </section>
   </div>
 
-  <div id="modalRoot"></div>
-  <div id="toastRoot" class="toast-root"></div>
-  <div id="printRoot" class="print-root"></div>
+  <!-- مودال اختيار منتج من المخزون -->
+  <div class="modal no-print" id="productPickerModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-picker></div>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+      <header class="modal-header">
+        <div><h2 id="pickerTitle">اختيار منتج من المخزون</h2><p>ابحث بالاسم أو رقم القطعة أو الباركود.</p></div>
+        <button class="icon-button" id="closePickerBtn" type="button" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body">
+        <label class="field"><span>بحث</span><input id="pickerSearch" autofocus placeholder="ابدأ الكتابة أو امسح الباركود"></label>
+        <div id="pickerList" class="picker-list"></div>
+      </div>
+    </section>
+  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <!-- مودال حركات المخزون -->
+  <div class="modal no-print" id="movementsModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-movements></div>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="movementsTitle">
+      <header class="modal-header">
+        <div><h2 id="movementsTitle">حركات المخزون</h2><p>آخر عمليات الإضافة والتعديل والبيع.</p></div>
+        <button class="icon-button" id="closeMovementsBtn" type="button" aria-label="إغلاق">×</button>
+      </header>
+      <div class="history-list" id="movementsList"></div>
+    </section>
+  </div>
+
+  <!-- مودال قائمة الفواتير المحفوظة -->
+  <div class="modal no-print" id="historyModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-history></div>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+      <header class="modal-header">
+        <div>
+          <h2 id="historyTitle">الفواتير المحفوظة</h2>
+          <p>الفاتورة المعتمدة لا تخصم المخزون مرة ثانية.</p>
+        </div>
+        <button class="icon-button" id="closeHistoryBtn" type="button" aria-label="إغلاق">×</button>
+      </header>
+      <div class="history-list" id="historyList"></div>
+    </section>
+  </div>
+
+  <!-- حاوية الطباعة (مخفية) -->
+  <div id="invoicePrintContainer" class="invoice-print-container" aria-hidden="true"></div>
+
+  <!-- ============================================================
+       المكتبات الخارجية
+       ============================================================ -->
   <script src="assets/vendor/qrcode.min.js"></script>
   <script src="assets/vendor/html2canvas.min.js"></script>
   <script src="assets/vendor/jspdf.umd.min.js"></script>
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/local-db.js"></script>
-  <script src="assets/js/api.js"></script>
+
+  <!-- ============================================================
+       كود التطبيق الرئيسي
+       ============================================================ -->
   <script src="assets/js/app.js"></script>
 </body>
 </html>
